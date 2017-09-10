@@ -30,8 +30,7 @@
  * @example1 :
   * - url :
   * + https://ermile.tejarak.com:80/fa/cp/tools/sitemap/ch=1/sa=2?run=true&ex=0
-  * - \lib\url::full()            //  https://ermile.tejarak
-.com:80/fa/cp/tools/sitemap/ch=1/sa=2?run=true&ex=0
+  * - \lib\url::full()            //  https://ermile.tejarak.com:80/fa/cp/tools/sitemap/ch=1/sa=2?run=true&ex=0
   * - \lib\url::path()            // fa/cp/tools/sitemap/ch=1/sa=2?run=true&ex=0
   * - \lib\url::base()            // https://ermile.tejarak.com:80/fa
   * - \lib\url::dir()             // cp/tools/sitemap/ch=1/sa=2?run=true&ex=0
@@ -61,10 +60,9 @@
   * @example2 :
   * - url :‌
   * + https://192.168.1.2:80/fa/cp/tools/sitemap/ch=1/sa=2?run=true&ex=0
-  * - \lib\url::full()            // https://192.168.1
-.2:80/fa/cp/tools/sitemap/ch=1/sa=2?run=true&ex=0
+  * - \lib\url::full()            // https://192.168.1.2:80/fa/cp/tools/sitemap/ch=1/sa=2?run=true&ex=0
   * - \lib\url::path()            // fa/cp/tools/sitemap/ch=1/sa=2?run=true&ex=0
-  * - \lib\url::base()            // https://192.168.1.2:80
+  * - \lib\url::base()            // https://192.168.1.2:80/fa
   * - \lib\url::dir()             // cp/tools/sitemap/ch=1/sa=2?run=true&ex=0
   * - \lib\url::dir(0)            // cp
   * - \lib\url::dir(1)            // tools
@@ -123,7 +121,7 @@
   * - \lib\url::full()            //  http://tejarak
 .com/fa/tools/sitemap/
   * - \lib\url::path()            // fa/tools/sitemap
-  * - \lib\url::base()            // https://tejarak.com
+  * - \lib\url::base()            // https://tejarak.com/fa
   * - \lib\url::dir()             // tools/sitemap
   * - \lib\url::dir(0)            // null
   * - \lib\url::dir(1)            // tools
