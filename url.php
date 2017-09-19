@@ -169,7 +169,8 @@ class url
 {
     private static $page_url = null;
     public static $url_array = null;
-    private static $is_set = false;
+    private static $is_set   = false;
+    private static $handle   = false;
 
     /**
      * @param null|string $_url
@@ -180,38 +181,74 @@ class url
     {
         if (isset($_url))
         {
-            self::$page_url = null;
+
             self::$url_array = null;
             self::$is_set = false;
+            self::$handle = true;
             if (filter_var($_url, FILTER_VALIDATE_URL))
             {
                 self::$page_url = $_url;
-                return self::$page_url;
-            }
-
-        }
-        else
-        {
-
-            if (isset($_SERVER['HTTPS']))
-            {
-                $protocol = "https";
             }
             else
             {
-                $protocol = "http";
+                self::$page_url = false;
+                return false;
             }
-            self::$page_url = $protocol . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        }
+        else
+        {
+            self::$page_url  = null;
+            self::$url_array = null;
+            self::$is_set    = false;
+            self::$handle    = false;
+            self::ip();
+            self::init();
+
         }
 
         if (isset(self::$page_url) && strpos(self::$page_url ,"/") !== false )
         {
+            self::$url_array = null;
+            return self::$page_url;
+        }
+        else
+        {
+            self::$url_array = null;
+            self::$page_url = null;
+            return self::$page_url;
+        }
+    }
+
+
+    /**
+     * make self::$page_url by $_SERVER
+     *
+     * @return bool|null|string return self::$page_url
+     */
+    private static function init()
+    {
+        if (isset($_SERVER['HTTPS']))
+        {
+            $protocol = "https";
+        }
+        else
+        {
+            $protocol = "http";
+        }
+        if (isset($_SERVER['HTTP_HOST']) && isset($_SERVER['REQUEST_URI']))
+        {
+            self::$page_url = $protocol . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+            return self::$page_url;
+        }
+        elseif (isset($_SERVER['HTTP_HOST']))
+        {
+            self::$page_url = $protocol . '://' . $_SERVER['HTTP_HOST'];
             return self::$page_url;
         }
         else
         {
             self::$page_url = false;
-            return self::$page_url ;
+            return false;
         }
     }
 
@@ -243,10 +280,11 @@ class url
         }
     }
 
+
     /**
      * @return self::$url_array
      */
-    public static function config()
+    private static function config()
     {
         if (self::$url_array !== null && self::$is_set === false)
         {
@@ -262,7 +300,6 @@ class url
             if (isset(self::$url_array["sub_domain"]) &&isset(self::$url_array["root"]) &&isset(self::$url_array["tld"]))
             {
                 self::$url_array["domain"] = self::$url_array["root"].".".self::$url_array["tld"];
-                error_log("");
                 if (isset(self::$url_array["port"]))
                 {
                     self::$url_array["host"]   = self::$url_array["sub_domain"].".".self::$url_array["domain"].":".self::$url_array["port"];
@@ -599,18 +636,22 @@ class url
 
     }
 
+
     /**
      * @return url
      */
     public static function get_array()
     {
+
         if (self::$url_array !== null)
         {
-            return self::config();
+            self::config();
+            return self::$url_array;
         }
         else
         {
-            return self::config();
+            self::config();
+            return self::$url_array;
         }
     }
 
@@ -621,7 +662,7 @@ class url
     public static function full()
     {
         self::config();
-        if (self::$url_array["full"] !==null)
+        if (isset(self::$url_array["full"]))
         {
             return self::$url_array["full"];
         }
@@ -637,8 +678,21 @@ class url
      */
     public static function path()
     {
+        if (self::$handle === false)
+        {
+            if (isset($_SERVER['REQUEST_URI']))
+            {
+                self::$url_array["path"] = $_SERVER['REQUEST_URI'];
+                return self::$url_array["path"];
+            }
+            else
+            {
+                self::$url_array["path"] = null;
+                return null;
+            }
+        }
         self::config();
-        if (self::$url_array["path"] !==null)
+        if (isset(self::$url_array["path"]))
         {
             return self::$url_array["path"];
         }
@@ -655,7 +709,7 @@ class url
     public static function base()
     {
         self::config();
-        if (self::$url_array["base"] !==null)
+        if (isset(self::$url_array["base"]))
         {
             return self::$url_array["base"];
         }
@@ -674,6 +728,10 @@ class url
     public static function dir($_argument = null)
     {
         self::config();
+        if (!isset(self::$url_array["dir"]))
+        {
+            return null;
+        }
         $url = self::$url_array["dir"];
         $pars = explode("/", $url );
         if ($_argument !== null)
@@ -707,7 +765,7 @@ class url
     public static function protocol()
     {
         self::config();
-        if (self::$url_array["protocol"] !==null)
+        if (isset(self::$url_array["protocol"]))
         {
             return self::$url_array["protocol"];
         }
@@ -723,8 +781,21 @@ class url
      */
     public static function host()
     {
+        if (self::$handle === false)
+        {
+            if (isset($_SERVER['HTTP_HOST']))
+            {
+                self::$url_array["host"] = $_SERVER['HTTP_HOST'];
+                return self::$url_array["host"];
+            }
+            else
+            {
+                self::$url_array["host"] = null;
+                return null;
+            }
+        }
         self::config();
-        if (self::$url_array["host"] !==null)
+        if (isset(self::$url_array["host"]))
         {
             return self::$url_array["host"];
         }
@@ -741,7 +812,7 @@ class url
     public static function sub_domain()
     {
         self::config();
-        if (self::$url_array["sub_domain"] !== null)
+        if (isset(self::$url_array["sub_domain"]))
         {
             return self::$url_array["sub_domain"];
         }
@@ -758,7 +829,7 @@ class url
     public static function domain()
     {
         self::config();
-        if (self::$url_array["domain"] !==null)
+        if (isset(self::$url_array["domain"]))
         {
             return self::$url_array["domain"];
         }
@@ -775,7 +846,7 @@ class url
     public static function root()
     {
         self::config();
-        if (self::$url_array["root"] !==null)
+        if (isset(self::$url_array["root"]))
         {
             return self::$url_array["root"];
         }
@@ -792,7 +863,7 @@ class url
     public static function tld()
     {
         self::config();
-        if (self::$url_array["tld"] !==null)
+        if (isset(self::$url_array["tld"]))
         {
             return self::$url_array["tld"];
         }
@@ -809,7 +880,7 @@ class url
     public static function port()
     {
         self::config();
-        if (self::$url_array["port"] !==null)
+        if (isset(self::$url_array["port"]))
         {
             return self::$url_array["port"];
         }
@@ -826,7 +897,7 @@ class url
     public static function lang()
     {
         self::config();
-        if (self::$url_array["lang"] !==null)
+        if (isset(self::$url_array["lang"]))
         {
             return self::$url_array["lang"];
         }
@@ -843,7 +914,7 @@ class url
     public static function content()
     {
         self::config();
-        if (self::$url_array["content"] !==null)
+        if (isset(self::$url_array["content"]))
         {
             return self::$url_array["content"];
         }
@@ -860,7 +931,7 @@ class url
     public static function module()
     {
         self::config();
-        if (self::$url_array["module"] !==null)
+        if (isset(self::$url_array["module"]))
         {
             return self::$url_array["module"];
         }
@@ -877,7 +948,7 @@ class url
     public static function child()
     {
         self::config();
-        if (self::$url_array["child"] !==null)
+        if (isset(self::$url_array["child"]))
         {
             return self::$url_array["child"];
         }
@@ -895,6 +966,10 @@ class url
      */
     public static function property($_argument = null)
     {
+        if (!isset(self::$url_array["property"]))
+        {
+            return null;
+        }
         self::config();
         $url =  self::$url_array["property"];
         if ($_argument !== null)
@@ -946,6 +1021,10 @@ class url
      */
     public static function query($_argument = null)
     {
+        if (!isset(self::$url_array["query"]))
+        {
+            return null;
+        }
         self::config();
         if (isset(self::$url_array["query"]) && self::$url_array["query"] !== null)
         {
@@ -1002,6 +1081,36 @@ class url
 
 
     /**
+     * @return null|string
+     */
+    public static function ip()
+    {
+
+        if (self::$handle !== false)
+        {
+            return null;
+        }
+        if (isset($_SERVER['SERVER_ADDR']) && isset($_SERVER['SERVER_PORT']))
+        {
+            self::$url_array["ip"] = $_SERVER['SERVER_ADDR'].":".$_SERVER['SERVER_PORT'];
+            return self::$url_array["ip"];
+        }
+        elseif (isset($_SERVER['SERVER_ADDR']) )
+        {
+            self::$url_array["ip"] = $_SERVER['SERVER_ADDR'];
+            return self::$url_array["ip"];
+        }
+        else
+        {
+            self::$url_array["ip"] = null;
+            return null;
+        }
+
+
+    }
+
+
+    /**
      * @param $_name string what want to change in self::url_array's key
      * @param $_arguments array $_arguments[1] == set
      *
@@ -1038,14 +1147,14 @@ class url
                 case "property":
                     $propertys = explode("/",self::$url_array["property"]);
                     $true = 0;
-                    $propert_key = 0 ;
+                    $propert_key = 0;
                     if (!is_array($propertys))
                     {
                         return false;
                     }
                     foreach ($propertys as $property_key => $property_value)
                     {
-                        $propert_key = $property_key + 1 ;
+                        $propert_key = $property_key + 1;
                         $propertys2 = explode("=",$property_value);
                         if ( in_array($key,$propertys2) === true )
                         {
@@ -1077,14 +1186,14 @@ class url
                 case "query":
                     $querys = explode("&",self::$url_array["query"]);
                     $true = 0;
-                    $quer_key = 0 ;
+                    $quer_key = 0;
                     if (!is_array($querys))
                     {
                         return false;
                     }
                     foreach ($querys as $query_key => $query_value)
                     {
-                        $quer_key = $query_key + 1 ;
+                        $quer_key = $query_key + 1;
                         $querys2 = explode("=",$query_value);
                         if ( in_array($key,$querys2) === true )
                         {
@@ -1096,7 +1205,15 @@ class url
                     }
                     if ($true == 1)
                     {
-                        $query2 = implode("&",$querys );
+                        if (self::$url_array["query"] === null)
+                        {
+                            $query2 = implode("",$querys );
+                        }
+                        else
+                        {
+                            error_log(self::$url_array["query"] ."fuck");
+                            $query2 = implode("&",$querys );
+                        }
                         self::$url_array["query"] = $query2;
                         return true;
                     }
