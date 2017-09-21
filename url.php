@@ -162,13 +162,16 @@
  * \lib\url::property()        // null
  * \lib\url::query()           // null
  */
-namespace lib;
 
 
 class url
 {
+    private function __construct()
+    {
+        self::make_url();
+    }
     private static $page_url = null;
-    public static $url_array = null;
+    private static $url_array = null;
     private static $is_set   = false;
     private static $handle   = false;
 
@@ -191,8 +194,8 @@ class url
             }
             else
             {
-                self::$page_url = false;
-                return false;
+                self::$page_url = null;
+                return self::$page_url;
             }
         }
         else
@@ -247,7 +250,7 @@ class url
         }
         else
         {
-            self::$page_url = false;
+            self::$page_url = null;
             return false;
         }
     }
@@ -378,13 +381,12 @@ class url
         self::$url_array["dir"]        = null;
         self::$url_array["path"]       = null;
         self::$url_array["full"]       = null;
-        if (self::$page_url === false)
+        if (self::$page_url === null || self::$handle === false)
         {
-            return null;
-        }
-        elseif (self::$page_url=== null)
-        {
-            self::make_url();
+            if (self::make_url() === null)
+            {
+                return false;
+            }
         }
         $url = self::$page_url;
         $url_content = explode("/",$url);
@@ -411,7 +413,7 @@ class url
                 $host_content =explode(":",$url_content[2]);
                 if (isset($host_content[1]))
                 {
-                self::$url_array["port"] = $host_content[1];
+                    self::$url_array["port"] = $host_content[1];
                 }
                 else
                 {
@@ -425,87 +427,87 @@ class url
         }
         else
         {
-           $host_content = explode(".",$url_content[2]);
-           if (array_key_exists(3,$host_content) !== false )
-           {
+            $host_content = explode(".",$url_content[2]);
+            if (array_key_exists(3,$host_content) !== false )
+            {
                 // host is port !
-               self::$url_array["sub_domain"] = null;
-               self::$url_array["root"]      = null;
-               self::$url_array["tld"]       = null;
-               self::$url_array["host"]      = $url_content[2];
-               self::$url_array["domain"]    = null;
-               if (strpos($url_content[2],":") !== false)
-               {
-                   $host_content =explode(":",$url_content[2]);
-                   if (isset($host_content[1]))
-                   {
-                       self::$url_array["port"] = $host_content[1];
-                   }
-                   else
-                   {
-                       self::$url_array["port"] = null;
-                   }
-               }
-               else
-               {
-                   self::$url_array["port"] = null;
-               }
-           }
-           elseif (array_key_exists(2,$host_content) !== false)
-           {
-               self::$url_array["sub_domain"] = $host_content[0];
-               self::$url_array["root"]      = $host_content[1];
-               if (strpos($host_content[2],":") !== false)
-               {
-                   list($tld,$port) = explode(":",$host_content[2]);
-                   if (isset($tld) && isset($port))
-                   {
-                       self::$url_array["tld"]       = $tld;
-                       self::$url_array["port"]      = $port;
-                       self::$url_array["domain"]    = self::$url_array["root"].".".self::$url_array["tld"];
-                       self::$url_array["host"] = self::$url_array["sub_domain"]."."
-                           .self::$url_array["root"].".".self::$url_array["tld"].":".self::$url_array["port"];
-                   }
-               }
-               else
-               {
-                   self::$url_array["tld"]       = $host_content[2];
-                   self::$url_array["port"]      = null;
-                   self::$url_array["domain"]    = self::$url_array["root"].".".self::$url_array["tld"];
-                   self::$url_array["host"] = self::$url_array["sub_domain"].".".self::$url_array["root"].".".self::$url_array["tld"];
-               }
-           }
-           elseif (array_key_exists(1,$host_content) !== false)
-           {
-               self::$url_array["sub_domain"] = null;
-               self::$url_array["root"]      = $host_content[0];
-               if (strpos($host_content[1],":") !== false)
-               {
-                   list($tld,$port) = explode(":",$host_content[1]);
-                   if (isset($tld) && isset($port))
-                   {
-                       self::$url_array["tld"]       = $tld;
-                       self::$url_array["port"]      = $port;
-                       self::$url_array["domain"]    = self::$url_array["root"].".".self::$url_array["tld"];
-                       self::$url_array["host"] = self::$url_array["root"].".".self::$url_array["tld"].":".self::$url_array["port"];
-                   }
-               }
-               else
-               {
-                   self::$url_array["tld"]       = $host_content[1];
-                   self::$url_array["port"]      = null;
-                   self::$url_array["host"]      = self::$url_array["root"].".".self::$url_array["tld"];
-                   self::$url_array["domain"]    = self::$url_array["root"].".".self::$url_array["tld"];
-               }
-           }
-           else
-           {
-               self::$url_array["sub_domain"] = null;
-               self::$url_array["root"]      = null;
-               self::$url_array["tld"]       = null;
-               self::$url_array["port"]      = null;
-               self::$url_array["host"]      = null;
-           }
+                self::$url_array["sub_domain"] = null;
+                self::$url_array["root"]      = null;
+                self::$url_array["tld"]       = null;
+                self::$url_array["host"]      = $url_content[2];
+                self::$url_array["domain"]    = null;
+                if (strpos($url_content[2],":") !== false)
+                {
+                    $host_content =explode(":",$url_content[2]);
+                    if (isset($host_content[1]))
+                    {
+                        self::$url_array["port"] = $host_content[1];
+                    }
+                    else
+                    {
+                        self::$url_array["port"] = null;
+                    }
+                }
+                else
+                {
+                    self::$url_array["port"] = null;
+                }
+            }
+            elseif (array_key_exists(2,$host_content) !== false)
+            {
+                self::$url_array["sub_domain"] = $host_content[0];
+                self::$url_array["root"]      = $host_content[1];
+                if (strpos($host_content[2],":") !== false)
+                {
+                    list($tld,$port) = explode(":",$host_content[2]);
+                    if (isset($tld) && isset($port))
+                    {
+                        self::$url_array["tld"]       = $tld;
+                        self::$url_array["port"]      = $port;
+                        self::$url_array["domain"]    = self::$url_array["root"].".".self::$url_array["tld"];
+                        self::$url_array["host"] = self::$url_array["sub_domain"]."."
+                            .self::$url_array["root"].".".self::$url_array["tld"].":".self::$url_array["port"];
+                    }
+                }
+                else
+                {
+                    self::$url_array["tld"]       = $host_content[2];
+                    self::$url_array["port"]      = null;
+                    self::$url_array["domain"]    = self::$url_array["root"].".".self::$url_array["tld"];
+                    self::$url_array["host"] = self::$url_array["sub_domain"].".".self::$url_array["root"].".".self::$url_array["tld"];
+                }
+            }
+            elseif (array_key_exists(1,$host_content) !== false)
+            {
+                self::$url_array["sub_domain"] = null;
+                self::$url_array["root"]      = $host_content[0];
+                if (strpos($host_content[1],":") !== false)
+                {
+                    list($tld,$port) = explode(":",$host_content[1]);
+                    if (isset($tld) && isset($port))
+                    {
+                        self::$url_array["tld"]       = $tld;
+                        self::$url_array["port"]      = $port;
+                        self::$url_array["domain"]    = self::$url_array["root"].".".self::$url_array["tld"];
+                        self::$url_array["host"] = self::$url_array["root"].".".self::$url_array["tld"].":".self::$url_array["port"];
+                    }
+                }
+                else
+                {
+                    self::$url_array["tld"]       = $host_content[1];
+                    self::$url_array["port"]      = null;
+                    self::$url_array["host"]      = self::$url_array["root"].".".self::$url_array["tld"];
+                    self::$url_array["domain"]    = self::$url_array["root"].".".self::$url_array["tld"];
+                }
+            }
+            else
+            {
+                self::$url_array["sub_domain"] = null;
+                self::$url_array["root"]      = null;
+                self::$url_array["tld"]       = null;
+                self::$url_array["port"]      = null;
+                self::$url_array["host"]      = null;
+            }
         }
         if (isset($url_content[3]))
         {
@@ -524,7 +526,11 @@ class url
         {
             return self::$url_array;
         }
-        self::$url_array["property"]  = null;
+        self::$url_array["property"] = null;
+        self::$url_array["query"]    = null;
+        self::$url_array["module"]   = null;
+        self::$url_array["child"]    = null;
+        self::$url_array["property"] = null;
         $module_slash = null;
         $child_slash = null;
         $property_slash = null;
@@ -533,16 +539,15 @@ class url
         {
             if ($key == 0 || $key == 1 ||$key == 2 ||$key == 3)
             {
-
                 continue;
             }
-            if ($value == self::$url_array["content"])
+            elseif ($value == self::$url_array["content"])
             {
-
                 continue;
             }
-            if (strpos ($value,"=") !== false)
+            elseif (strpos ($value,"=") !== false)
             {
+                $property_slash = "/";
                 if (strpos ($value,"?") !== false)
                 {
                     // $value = query
@@ -577,6 +582,48 @@ class url
                     }
                 }
             }
+            elseif (strpos ($value,"?") !== false)
+            {
+                // $value = query
+                $query_slash = "?";
+                $query_content = explode("?" , $value);
+                if (isset($query_content[0]) && isset($query_content[1]))
+                {
+                    if (strpos ($query_content[0],"=") === false)
+                    {
+                        if (isset(self::$url_array["module"]))
+                        {
+                            if (isset(self::$url_array["child"]))
+                            {
+
+                                error_log("this url has more module and child please check");
+                            }
+                            else
+                            {
+                                self::$url_array["child"] = $query_content[0];
+                            }
+                        }
+                        else
+                        {
+                            self::$url_array["module"] = $query_content[0];
+                        }
+                    }
+                    else
+                    {
+                        $property_slash = "/";
+                        if (self::$url_array["property"] === null)
+                        {
+                            self::$url_array["property"] = $query_content[0];
+                        }
+                        else
+                        {
+                            self::$url_array["property"] = self::$url_array["property"]
+                                ."/".$query_content[0];
+                        }
+                    }
+                    self::$url_array["query"]    = $query_content[1];
+                }
+            }
             else
             {
                 // $value = module or child
@@ -592,6 +639,9 @@ class url
                 }
             }
         }
+        self::$url_array["dir"]         = self::$url_array["content"].$module_slash
+            .self::$url_array["module"].$child_slash.self::$url_array["child"].$property_slash
+            .self::$url_array["property"].$query_slash.self::$url_array["query"];
 
         self::$url_array["protocol"]  = substr($url_content[0], 0, -1);
         if (empty(self::$url_array["lang"]))
@@ -603,9 +653,6 @@ class url
             self::$url_array["base"]        = self::$url_array["protocol"]."://".self::$url_array["host"]."/".self::$url_array["lang"];
         }
 
-        self::$url_array["dir"]         = self::$url_array["content"].$module_slash
-            .self::$url_array["module"].$child_slash.self::$url_array["child"].$property_slash
-            .self::$url_array["property"].$query_slash.self::$url_array["query"];
 
         if (empty(self::$url_array["dir"]))
         {
@@ -636,32 +683,34 @@ class url
 
     }
 
-
     /**
      * @return url
      */
     public static function get_array()
     {
-
         if (self::$url_array !== null)
         {
-            self::config();
             return self::$url_array;
         }
         else
         {
-            self::config();
+            if (self::config() === false)
+            {
+                return null;
+            }
             return self::$url_array;
         }
     }
-
 
     /**
      * @return mixed|null full url
      */
     public static function full()
     {
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (isset(self::$url_array["full"]))
         {
             return self::$url_array["full"];
@@ -691,7 +740,10 @@ class url
                 return null;
             }
         }
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (isset(self::$url_array["path"]))
         {
             return self::$url_array["path"];
@@ -708,7 +760,10 @@ class url
      */
     public static function base()
     {
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (isset(self::$url_array["base"]))
         {
             return self::$url_array["base"];
@@ -727,7 +782,10 @@ class url
      */
     public static function dir($_argument = null)
     {
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (!isset(self::$url_array["dir"]))
         {
             return null;
@@ -764,7 +822,10 @@ class url
      */
     public static function protocol()
     {
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (isset(self::$url_array["protocol"]))
         {
             return self::$url_array["protocol"];
@@ -794,7 +855,10 @@ class url
                 return null;
             }
         }
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (isset(self::$url_array["host"]))
         {
             return self::$url_array["host"];
@@ -811,7 +875,10 @@ class url
      */
     public static function sub_domain()
     {
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (isset(self::$url_array["sub_domain"]))
         {
             return self::$url_array["sub_domain"];
@@ -828,7 +895,10 @@ class url
      */
     public static function domain()
     {
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (isset(self::$url_array["domain"]))
         {
             return self::$url_array["domain"];
@@ -845,7 +915,10 @@ class url
      */
     public static function root()
     {
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (isset(self::$url_array["root"]))
         {
             return self::$url_array["root"];
@@ -862,7 +935,10 @@ class url
      */
     public static function tld()
     {
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (isset(self::$url_array["tld"]))
         {
             return self::$url_array["tld"];
@@ -879,7 +955,10 @@ class url
      */
     public static function port()
     {
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (isset(self::$url_array["port"]))
         {
             return self::$url_array["port"];
@@ -896,7 +975,10 @@ class url
      */
     public static function lang()
     {
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (isset(self::$url_array["lang"]))
         {
             return self::$url_array["lang"];
@@ -913,7 +995,10 @@ class url
      */
     public static function content()
     {
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (isset(self::$url_array["content"]))
         {
             return self::$url_array["content"];
@@ -930,7 +1015,10 @@ class url
      */
     public static function module()
     {
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (isset(self::$url_array["module"]))
         {
             return self::$url_array["module"];
@@ -947,7 +1035,10 @@ class url
      */
     public static function child()
     {
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (isset(self::$url_array["child"]))
         {
             return self::$url_array["child"];
@@ -970,7 +1061,10 @@ class url
         {
             return null;
         }
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         $url =  self::$url_array["property"];
         if ($_argument !== null)
         {
@@ -1025,7 +1119,10 @@ class url
         {
             return null;
         }
-        self::config();
+        if (self::config() === false)
+        {
+            return null;
+        }
         if (isset(self::$url_array["query"]) && self::$url_array["query"] !== null)
         {
             $url = substr(self::$url_array["query"], 1);
@@ -1211,7 +1308,6 @@ class url
                         }
                         else
                         {
-                            error_log(self::$url_array["query"] ."fuck");
                             $query2 = implode("&",$querys );
                         }
                         self::$url_array["query"] = $query2;
